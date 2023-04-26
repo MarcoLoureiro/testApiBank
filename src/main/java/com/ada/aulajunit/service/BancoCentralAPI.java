@@ -1,11 +1,15 @@
 package com.ada.aulajunit.service;
 
 import com.ada.aulajunit.modelo.DollarQuotation;
+import com.ada.aulajunit.repository.QuotationRepository;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cglib.core.Local;
+import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -16,8 +20,12 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+
+@Service
 public class BancoCentralAPI {
 
+    @Autowired
+    private QuotationRepository quotationRepository;
     private static final MathContext ROUND = new MathContext(5, RoundingMode.HALF_UP);
     private static final String QUOTATION_DAY_URL = "https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoDolarDia(dataCotacao=@dataCotacao)?@dataCotacao='{START_DATE}'&$top=100&$format=json";
 
@@ -38,7 +46,6 @@ public class BancoCentralAPI {
             return quotation;
         }
     }
-
 
     private DollarQuotation parse(JSONObject object) throws ParseException {
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
@@ -68,4 +75,13 @@ public class BancoCentralAPI {
         start.set(Calendar.MILLISECOND, 0);
         return start.getTime();
     }
+
+    public DollarQuotation registerDollarQuotation(DollarQuotation dollarQuotation){
+        return quotationRepository.save(dollarQuotation);
+    }
+
+    public DollarQuotation findDbDollarQuotationByDate(Date date){
+        return quotationRepository.findByDate(date);
+    }
+
 }
